@@ -1,7 +1,6 @@
 use std::{
     cmp::max,
     collections::HashMap,
-    env::args,
     fmt::Display,
     fs::{self, read_to_string},
     io,
@@ -9,15 +8,25 @@ use std::{
     path::PathBuf,
 };
 
+use clap::Parser;
+
 mod solvers;
 
-pub struct DayInputPair {
+struct DayInputPair {
     input: String,
     day: u8,
 }
 
+#[derive(Parser)]
+struct CliArgs {
+    #[arg(short, long)]
+    day: Option<u8>,
+    #[arg(short, long)]
+    test_dir: Option<PathBuf>,
+}
+
 #[derive(Debug)]
-pub enum ParseDayInputPairError {
+enum ParseDayInputPairError {
     IoError(io::Error),
     DayParseError(ParseIntError),
     OtherError(String),
@@ -63,9 +72,9 @@ pub trait Solver {
     fn solve(&self, input: &String) -> String;
 }
 
-fn parse_args() -> Result<DayInputPair, ParseDayInputPairError> {
+fn parse_args(args: &CliArgs) -> Result<DayInputPair, ParseDayInputPairError> {
     // TODO: Allow the test dir to be passed as an argument
-    let paths = fs::read_dir("./tests")?;
+    let paths = fs::read_dir(args.test_dir.clone().unwrap_or("./tests".into()))?;
     let mut max_day: u8 = 0;
     let mut day_dir_map: HashMap<u8, PathBuf> = HashMap::new();
 
@@ -85,11 +94,7 @@ fn parse_args() -> Result<DayInputPair, ParseDayInputPairError> {
         }
     }
 
-    let target_day = args()
-        .nth(1)
-        .map(|day_string| day_string.parse::<u8>())
-        .transpose()?
-        .unwrap_or(max_day);
+    let target_day = args.day.unwrap_or(max_day);
     if !day_dir_map.contains_key(&target_day) {
         return Err(format!("Could not find test file for day {target_day}").into());
     }
@@ -101,7 +106,7 @@ fn parse_args() -> Result<DayInputPair, ParseDayInputPairError> {
 }
 
 fn main() {
-    let maybe_input_pair = parse_args();
+    let maybe_input_pair = parse_args(&CliArgs::parse());
     if let Err(parse_err) = maybe_input_pair {
         println!("Encountered error while parsing input: {}", parse_err);
         return;
