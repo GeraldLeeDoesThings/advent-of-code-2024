@@ -2,11 +2,14 @@ use std::{
     cmp::max,
     collections::HashMap,
     env::args,
+    fmt::Display,
     fs::{self, read_to_string},
     io,
     num::ParseIntError,
     path::PathBuf,
 };
+
+mod solvers;
 
 pub struct DayInputPair {
     input: String,
@@ -18,6 +21,18 @@ pub enum ParseDayInputPairError {
     IoError(io::Error),
     DayParseError(ParseIntError),
     OtherError(String),
+}
+
+impl Display for ParseDayInputPairError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ParseDayInputPairError::IoError(error) => writeln!(f, "IoError: {error}"),
+            ParseDayInputPairError::DayParseError(parse_int_error) => {
+                writeln!(f, "DayParseError: {parse_int_error}")
+            }
+            ParseDayInputPairError::OtherError(error_msg) => writeln!(f, "OtherError: {error_msg}"),
+        }
+    }
 }
 
 impl From<io::Error> for ParseDayInputPairError {
@@ -42,6 +57,10 @@ impl From<String> for ParseDayInputPairError {
     fn from(s: String) -> Self {
         Self::OtherError(s)
     }
+}
+
+pub trait Solver {
+    fn solve(&self, input: &String) -> String;
 }
 
 fn parse_args() -> Result<DayInputPair, ParseDayInputPairError> {
@@ -84,9 +103,15 @@ fn parse_args() -> Result<DayInputPair, ParseDayInputPairError> {
 fn main() {
     let maybe_input_pair = parse_args();
     if let Err(parse_err) = maybe_input_pair {
-        println!("Encountered error while parsing input: {:#?}", parse_err);
+        println!("Encountered error while parsing input: {}", parse_err);
         return;
     }
     let input_pair = maybe_input_pair.unwrap();
-    println!("Day: {}\n{}", input_pair.day, input_pair.input);
+    println!("Day: {}", input_pair.day);
+    let maybe_solver = solvers::get_solver(input_pair.day);
+    if maybe_solver.is_none() {
+        println!("Could not find solver for day {}", input_pair.day);
+    }
+    let solver = maybe_solver.unwrap();
+    println!("Result:\n{}", solver.solve(&input_pair.input));
 }
