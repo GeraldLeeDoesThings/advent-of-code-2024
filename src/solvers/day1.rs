@@ -1,4 +1,4 @@
-use std::iter::zip;
+use std::collections::HashMap;
 
 pub struct Solver {}
 
@@ -8,22 +8,22 @@ impl crate::Solver for Solver {
         while cleaned.contains("  ") {
             cleaned = cleaned.replace("  ", " ")
         }
-        let mut list_a: Vec<usize> = Vec::new();
-        let mut list_b: Vec<usize> = Vec::new();
+        let mut count_a: HashMap<usize, usize> = HashMap::new();
+        let mut count_b: HashMap<usize, usize> = HashMap::new();
         for line in cleaned.lines() {
             let nums: Vec<&str> = line.split(" ").collect();
             if nums.len() != 2 {
                 break;
             }
-            list_a.push(nums[0].parse().unwrap());
-            list_b.push(nums[1].parse().unwrap());
+            let a = nums[0].parse().unwrap();
+            let b = nums[1].parse().unwrap();
+            count_a.insert(a, count_a.get(&a).unwrap_or(&0) + 1);
+            count_b.insert(b, count_b.get(&b).unwrap_or(&0) + 1);
         }
-        list_a.sort();
-        list_b.sort();
-        let mut diff: usize = 0;
-        for (a, b) in zip(list_a, list_b) {
-            diff += a.abs_diff(b);
+        let mut similarity: usize = 0;
+        for (a, count) in &count_a {
+            similarity += a * count * count_b.get(a).unwrap_or(&0);
         }
-        diff.to_string()
+        similarity.to_string()
     }
 }
