@@ -12,44 +12,22 @@ impl crate::Solver for Solver {
                 grid[x].insert(y, c);
             }
         }
-        let directions = [
-            (-1, 0),
-            (-1, -1),
-            (0, -1),
-            (1, -1),
-            (1, 0),
-            (1, 1),
-            (0, 1),
-            (-1, 1),
-        ];
-        let mut to_search: Vec<(usize, usize, char)> = Vec::new();
         let mut found: usize = 0;
 
-        fn search(x: usize, y: usize, grid: &Vec<Vec<char>>, direction: (isize, isize), target: &str) -> bool {
-            if target.len() == 0 {
-                return true;
-            }
-            if let Some(found) = grid.get(x).map(|xs| xs.get(y)).flatten() {
-                if *found == target.chars().nth(0).unwrap() {
-                    if target.len() == 1 {
-                        return true;
-                    }
-                    let nx = x.checked_add_signed(direction.0);
-                    let ny = y.checked_add_signed(direction.1);
-                    if nx.is_some() && ny.is_some() {
-                        return search(nx.unwrap(), ny.unwrap(), grid, direction, &target[1..]);
-                    }
-                }
-            }
-            false
+        fn search(x: usize, y: usize, grid: &Vec<Vec<char>>) -> bool {
+            let ul = grid[x - 1][y - 1];
+            let ur = grid[x + 1][y - 1];
+            let bl = grid[x - 1][y + 1];
+            let br = grid[x + 1][y + 1];
+            let down_diagonal_ok = (ul == 'M' && br == 'S') || (ul == 'S' && br == 'M');
+            let up_diagonal_ok = (bl == 'M' && ur == 'S') || (bl == 'S' && ur == 'M');
+            down_diagonal_ok && up_diagonal_ok && grid[x][y] == 'A'
         }
 
-        for x in 0..grid.len() {
-            for y in 0..grid[0].len() {
-                for direction in directions {
-                    if search(x, y, &grid, direction, "XMAS") {
-                        found += 1;
-                    }
+        for x in 1..grid.len() - 1 {
+            for y in 1..grid[0].len() - 1 {
+                if search(x, y, &grid) {
+                    found += 1;
                 }
             }
         }
