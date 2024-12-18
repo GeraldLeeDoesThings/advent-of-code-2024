@@ -10,30 +10,24 @@ impl crate::Solver for Solver {
         let mut visited: HashSet<(usize, usize)> = HashSet::new();
         let mut pos: (usize, usize) = (0, 0);
         let mut start: (usize, usize) = (0, 0);
-        let directions: [(isize, isize); 4] = [
-            (0, -1),
-            (1, 0),
-            (0, 1),
-            (-1, 0),
-        ];
+        let directions: [(isize, isize); 4] = [(0, -1), (1, 0), (0, 1), (-1, 0)];
         let mut dir_index: usize = 0;
         for (y, line) in input.lines().enumerate() {
             for (x, c) in line.chars().enumerate() {
                 if let Some(col) = map.get_mut(x) {
                     col.insert(y, c);
-                }
-                else {
+                } else {
                     map.insert(x, Vec::from([c]));
                 }
                 match c {
                     '#' => {
                         blocked.insert((x, y));
-                    },
+                    }
                     '^' => {
                         pos = (x, y);
                         start = (x, y);
                         visited.insert((x, y));
-                    },
+                    }
                     _ => (),
                 }
             }
@@ -51,12 +45,10 @@ impl crate::Solver for Solver {
                 }
                 if blocked.contains(&npos) {
                     dir_index = (dir_index + 1) % directions.len();
-                }
-                else {
+                } else {
                     pos = npos;
                 }
-            }
-            else {
+            } else {
                 break;
             }
         }
@@ -87,12 +79,10 @@ impl crate::Solver for Solver {
                     }
                     if blocked.contains(&npos) {
                         dir_index = (dir_index + 1) % directions.len();
-                    }
-                    else {
+                    } else {
                         pos = npos;
                     }
-                }
-                else {
+                } else {
                     break;
                 }
             }
