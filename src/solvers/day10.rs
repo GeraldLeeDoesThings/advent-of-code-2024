@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 pub struct Solver {}
 
 impl crate::Solver for Solver {
@@ -10,7 +8,6 @@ impl crate::Solver for Solver {
                 .map(|c| c.to_digit(10).unwrap() as u8)
                 .collect()
         }));
-        let mut num_trailheads: usize = 0;
         let mut ways_to_reach: Vec<Vec<Option<usize>>> = Vec::from_iter(map.iter().map(|v| {
             v.iter()
                 .map(|h| match *h {

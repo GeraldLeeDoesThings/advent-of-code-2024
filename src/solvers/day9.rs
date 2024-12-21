@@ -22,16 +22,6 @@ impl crate::Solver for Solver {
 
         let mut low: usize = 0;
 
-        fn dump_fs(data: &Vec<Option<u32>>) {
-            for d in data {
-                match d {
-                    None => print!("."),
-                    Some(v) => print!("{v}"),
-                }
-            }
-            println!()
-        }
-
         fn count_free_space_at(data: &Vec<Option<u32>>, i: usize) -> usize {
             let mut found: usize = 0;
             while data.get(i + found).map(|v| v.is_none()).unwrap_or(false) {
