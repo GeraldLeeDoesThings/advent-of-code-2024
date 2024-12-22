@@ -28,8 +28,20 @@ impl crate::Solver for Solver {
                 button_b_parse.get(2).unwrap().as_str().parse().unwrap(),
             );
             let prize: (isize, isize) = (
-                prize_parse.get(1).unwrap().as_str().parse().unwrap(),
-                prize_parse.get(2).unwrap().as_str().parse().unwrap(),
+                10000000000000_isize
+                    + prize_parse
+                        .get(1)
+                        .unwrap()
+                        .as_str()
+                        .parse::<isize>()
+                        .unwrap(),
+                10000000000000_isize
+                    + prize_parse
+                        .get(2)
+                        .unwrap()
+                        .as_str()
+                        .parse::<isize>()
+                        .unwrap(),
             );
             // println!("A: X+{} Y+{}", button_a.0, button_a.1);
             // println!("B: X+{} Y+{}", button_b.0, button_b.1);
@@ -37,7 +49,7 @@ impl crate::Solver for Solver {
 
             let b_denom = button_a.0 * button_b.1 - button_a.1 * button_b.0;
             let b_numer = button_a.0 * prize.1 - button_a.1 * prize.0;
-            
+
             // a and b seem to always be linearly independant, so no need to check
             if let Some(b_candidate) = b_numer.checked_div(b_denom) {
                 if let Some(a_candidate) =
@@ -47,8 +59,6 @@ impl crate::Solver for Solver {
                         && prize.1 == button_a.1 * a_candidate + button_b.1 * b_candidate
                         && a_candidate >= 0
                         && b_candidate >= 0
-                        && a_candidate <= 100
-                        && b_candidate <= 100
                     {
                         acc += a_candidate as usize * 3 + b_candidate as usize;
                     }
