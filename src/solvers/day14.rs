@@ -81,31 +81,62 @@ impl crate::Solver for Solver {
             robots.push(Robot::new(pos.0, pos.1, vel.0, vel.1));
         }
 
-        let mut quad_counts: [usize; 4] = [0; 4];
+        let mut draw: [[bool; WIDTH as usize]; HEIGHT as usize];
 
-        for (x, y) in robots.iter_mut().map(|robot| robot.solve(100)) {
-            let mut x_offset = None;
-            let mut y_offset = None;
-            if x < WIDTH / 2 {
-                x_offset = Some(0);
-            } else if x > WIDTH / 2 {
-                x_offset = Some(2);
+        let mut best: Option<(usize, usize)> = None;
+
+        for step in 0..10403 {
+            // One full period
+
+            draw = [[false; WIDTH as usize]; HEIGHT as usize];
+
+            for (x, y) in robots.iter_mut().map(|robot| robot.solve(step)) {
+                draw[y as usize][x as usize] = true;
             }
 
-            if y < HEIGHT / 2 {
-                y_offset = Some(0);
-            } else if y > HEIGHT / 2 {
-                y_offset = Some(1);
+            let mut score: usize = 0;
+
+            for x in 1..WIDTH - 1 {
+                for y in 1..HEIGHT - 1 {
+                    if !draw[y as usize][x as usize] {
+                        continue;
+                    }
+                    let diffs: [(isize, isize); 4] = [(-1, 0), (0, -1), (1, 0), (0, 1)];
+                    let mut inner_score = 0;
+                    for (dx, dy) in diffs {
+                        if draw[(y + dy) as usize][(x + dx) as usize] {
+                            inner_score += 1;
+                        }
+                    }
+
+                    score += inner_score * inner_score;
+                }
             }
 
-            if let (Some(x_offset), Some(y_offset)) = (x_offset, y_offset) {
-                quad_counts[x_offset + y_offset] += 1;
+            if let Some((_, best_score)) = best {
+                if score > best_score {
+                    best = Some((step, score));
+                }
+            } else {
+                best = Some((step, score));
             }
         }
 
-        quad_counts
-            .iter()
-            .fold(1, |acc, count| acc * count)
-            .to_string()
+        draw = [[false; WIDTH as usize]; HEIGHT as usize];
+
+        for (x, y) in robots.iter_mut().map(|robot| robot.solve(best.unwrap().0)) {
+            draw[y as usize][x as usize] = true;
+        }
+
+        for row in draw {
+            println!(
+                "{}",
+                &row.iter()
+                    .map(|full| if *full { 'O' } else { ' ' })
+                    .collect::<String>()
+            );
+        }
+
+        best.unwrap().0.to_string()
     }
 }
