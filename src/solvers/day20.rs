@@ -40,7 +40,6 @@ impl crate::Solver for Solver {
             }
         }
 
-        // let mut cheat_savings: HashMap<usize, usize> = HashMap::new();
         let mut decent_cheats: usize = 0;
 
         for y in 0..map.len() {
@@ -49,9 +48,9 @@ impl crate::Solver for Solver {
                     continue;
                 }
 
-                for dx in -2_isize..=2 {
-                    for dy in -(2 - dx.abs())..=(2 - dx.abs()) {
-                        if dx.abs() + dy.abs() != 2 {
+                for dx in -20_isize..=20 {
+                    for dy in -(20 - dx.abs())..=(20 - dx.abs()) {
+                        if dx.abs() + dy.abs() > 20 {
                             continue;
                         }
 
@@ -62,10 +61,9 @@ impl crate::Solver for Solver {
                                 .get(ny)
                                 .is_some_and(|row| row.get(nx).is_some_and(|val| val.is_some()))
                             {
-                                // bests[y][x] -> bests[ny][nx] + 2
-                                if let Some(savings) =
-                                    bests[y][x].unwrap().checked_sub(bests[ny][nx].unwrap() + 2)
-                                {
+                                if let Some(savings) = bests[y][x].unwrap().checked_sub(
+                                    bests[ny][nx].unwrap() + dx.abs() as usize + dy.abs() as usize,
+                                ) {
                                     if savings >= 100 {
                                         decent_cheats += 1;
                                     }
@@ -76,8 +74,6 @@ impl crate::Solver for Solver {
                 }
             }
         }
-
-        // println!("{:?}", cheat_savings);
 
         decent_cheats.to_string()
     }
