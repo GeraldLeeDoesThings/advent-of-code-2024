@@ -1,4 +1,4 @@
-use std::usize;
+use std::{collections::HashSet, usize};
 
 pub struct Solver {}
 
@@ -120,9 +120,44 @@ impl crate::Solver for Solver {
             explore_queue.push((x, y, cost + 1000, direction.rotate_ccw()));
         }
 
-        best[end.1][end.0]
+        let best_val = best[end.1][end.0]
             .iter()
-            .fold(usize::MAX, |acc, best| acc.min(best.unwrap()))
-            .to_string()
+            .fold(usize::MAX, |acc, best| acc.min(best.unwrap()));
+
+        // Search "backwards" to find all paths
+        let mut on_path: HashSet<(usize, usize)> = HashSet::new();
+
+        for (dir_index, _) in best[end.1][end.0]
+            .iter()
+            .enumerate()
+            .filter(|(_, cost)| cost.is_some_and(|c| c == best_val))
+        {
+            explore_queue.push((end.0, end.1, best_val, dir_index.into()));
+        }
+
+        while let Some((x, y, cost, direction)) = explore_queue.pop() {
+            if map[y][x] == '#' {
+                continue;
+            }
+
+            if best[y][x][direction.index()].is_some_and(|c| c == cost) {
+                on_path.insert((x, y));
+                let diffs: (isize, isize) = direction.into();
+                if cost >= 1 {
+                    explore_queue.push((
+                        x.checked_add_signed(-diffs.0).unwrap(),
+                        y.checked_add_signed(-diffs.1).unwrap(),
+                        cost - 1,
+                        direction,
+                    ));
+                }
+                if cost >= 1000 {
+                    explore_queue.push((x, y, cost - 1000, direction.rotate_cw()));
+                    explore_queue.push((x, y, cost - 1000, direction.rotate_ccw()));
+                }
+            }
+        }
+
+        on_path.len().to_string()
     }
 }
