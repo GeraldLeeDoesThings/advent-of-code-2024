@@ -29,6 +29,8 @@ fn cache_paths<const A: usize, const B: usize>(
                 continue;
             }
             let start = c.unwrap();
+            paths.insert((start, start), HashSet::from([Vec::new()]));
+
             assert!(coord_map.insert(start, (x, y)).is_none());
             let mut explore_list: HashSet<Vec<(usize, usize)>> =
                 HashSet::from([Vec::from([(x, y)])]);
@@ -154,6 +156,54 @@ fn solve<'a>(
     }
 }
 
+fn path_to_transitions(path: &Vec<char>) -> HashMap<(char, char), usize> {
+    let mut result: HashMap<(char, char), usize> = HashMap::new();
+    let mut prev = 'A';
+    for c in path {
+        let next = *c;
+        result.insert((prev, next), result.get(&(prev, next)).unwrap_or(&0) + 1);
+        prev = next;
+    }
+    result.insert((prev, 'A'), result.get(&(prev, 'A')).unwrap_or(&0) + 1);
+    result
+}
+
+type TransitionCache = HashMap<(char, char, usize), usize>;
+
+fn solve_transition(
+    transition: (char, char),
+    depth: usize,
+    path_map: &PathMap,
+    cache: &mut TransitionCache,
+) -> usize {
+    if let Some(cached) = cache.get(&(transition.0, transition.1, depth)) {
+        return *cached;
+    }
+
+    if depth == 0 {
+        // Manual input
+        return 1;
+    }
+
+    let result = path_map
+        .get(&transition)
+        .unwrap()
+        .iter()
+        .map(|path| {
+            let transitions = path_to_transitions(path);
+            let mut num_transitions: usize = 0;
+            for (transition, count) in transitions {
+                num_transitions += count * solve_transition(transition, depth - 1, path_map, cache);
+            }
+            num_transitions
+        })
+        .min()
+        .unwrap();
+
+    cache.insert((transition.0, transition.1, depth), result);
+    result
+}
+
 impl crate::Solver for Solver {
     fn solve(&self, input: &String) -> String {
         let numeric: [[Option<char>; 3]; 4] = [
@@ -177,21 +227,34 @@ impl crate::Solver for Solver {
 
         cache_paths(&directional, &mut direction_to_coord, &mut direction_paths);
 
+        let mut transition_cache: TransitionCache = TransitionCache::new();
         let mut acc: usize = 0;
-        let mut cache = HashMap::new();
+        let depth = 25;
         for line in input.lines() {
             let chars: Vec<char> = line.chars().collect();
-            let mut paths = solve('A', &chars[..], &numeric_paths, &mut HashMap::new());
-            for _ in 0..2 {
-                paths = HashSet::from_iter(
-                    paths
+            let paths = solve('A', &chars[..], &numeric_paths, &mut HashMap::new());
+            let min_transitions_needed: usize = paths
+                .iter()
+                .map(|path| {
+                    let transitions = path_to_transitions(path);
+                    transitions
                         .iter()
-                        .flat_map(|path| solve('A', path, &direction_paths, &mut cache)),
-                );
-            }
+                        .map(|(transition, count)| {
+                            count
+                                * solve_transition(
+                                    *transition,
+                                    depth,
+                                    &direction_paths,
+                                    &mut transition_cache,
+                                )
+                        })
+                        .sum::<usize>()
+                })
+                .min()
+                .unwrap();
 
-            let shortest = paths.iter().map(|path| path.len()).min().unwrap();
-            acc += line[..line.len() - 1].parse::<usize>().unwrap() * shortest;
+            let min_inputs = min_transitions_needed - 1; // Last transition (last -> A) is a dummy transition
+            acc += line[..line.len() - 1].parse::<usize>().unwrap() * min_inputs;
         }
 
         acc.to_string()
