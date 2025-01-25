@@ -7,7 +7,6 @@ pub struct Solver {}
 
 impl crate::Solver for Solver {
     fn solve(&self, input: &String) -> String {
-        // TODO: Implement
         let mut parsing_rules = true;
         let mut before: HashMap<usize, HashSet<usize>> = HashMap::new();
         let mut after: HashMap<usize, HashSet<usize>> = HashMap::new();

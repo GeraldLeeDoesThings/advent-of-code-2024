@@ -4,7 +4,6 @@ pub struct Solver {}
 
 impl crate::Solver for Solver {
     fn solve(&self, input: &String) -> String {
-        // TODO: Implement
         let mut patterns: Vec<String> = Vec::new();
 
         fn is_formable(

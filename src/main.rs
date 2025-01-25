@@ -73,7 +73,6 @@ pub trait Solver {
 }
 
 fn parse_args(args: &CliArgs) -> Result<DayInputPair, ParseDayInputPairError> {
-    // TODO: Allow the test dir to be passed as an argument
     let paths = fs::read_dir(args.test_dir.clone().unwrap_or("./tests".into()))?;
     let mut max_day: u8 = 0;
     let mut day_dir_map: HashMap<u8, PathBuf> = HashMap::new();

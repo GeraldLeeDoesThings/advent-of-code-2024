@@ -4,7 +4,6 @@ pub struct Solver {}
 
 impl crate::Solver for Solver {
     fn solve(&self, input: &String) -> String {
-        // TODO: Implement
         let mut map: Vec<Vec<char>> = Vec::new();
         let mut blocked: HashSet<(usize, usize)> = HashSet::new();
         let mut visited: HashSet<(usize, usize)> = HashSet::new();

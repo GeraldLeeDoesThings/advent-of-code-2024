@@ -70,7 +70,6 @@ impl Direction {
 
 impl crate::Solver for Solver {
     fn solve(&self, input: &String) -> String {
-        // TODO: Implement
         let map: Vec<Vec<char>> = Vec::from_iter(input.lines().map(|line| line.chars().collect()));
         let mut best: Vec<Vec<[Option<usize>; 4]>> = Vec::from_iter(
             input

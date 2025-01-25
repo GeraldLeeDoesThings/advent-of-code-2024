@@ -6,7 +6,6 @@ const BOARD_SIZE: usize = 71;
 
 impl crate::Solver for Solver {
     fn solve(&self, input: &String) -> String {
-        // TODO: Implement
         let mut blocked: [[bool; BOARD_SIZE]; BOARD_SIZE] = [[false; BOARD_SIZE]; BOARD_SIZE];
         let lines: Vec<String> = input.lines().map(|line| line.to_string()).collect();
         let mut lo: usize = 0;
